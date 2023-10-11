@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.custombabyshusher.R.raw.shush1
 
 
 class MainActivity : ComponentActivity() {
@@ -45,16 +46,26 @@ fun RunApp(){
 @Composable
 fun generateButtons(modifier: Modifier = Modifier) {
     val mContext = LocalContext.current
-    var mediaPlayer = MediaPlayer.create(mContext, R.raw.shush1)
+    var mediaPlayer = MediaPlayer.create(mContext, shush1)
     mediaPlayer.setOnCompletionListener{mp -> mp.start()}
     mediaPlayer.setVolume(1F, 1F)
+    var recorder: MediaRecorder? = null
+    var isRecording by remember { mutableStateOf(false) }
+    val imageResource = when (isRecording) {
+        true -> R.drawable.notrecording
+        else -> R.drawable.recording
+    }
     Box (modifier){
         Column(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.background(White)
         ) {
             IconButton(
-                onClick = { mediaPlayer.start()},
+                onClick = {
+                    if (!mediaPlayer.isPlaying && !isRecording) {
+                        mediaPlayer.start()
+                    }
+                },
                 modifier = Modifier.size(250.dp)
             ) {
                 Image(
@@ -69,12 +80,22 @@ fun generateButtons(modifier: Modifier = Modifier) {
                     contentDescription = "Pause"
                 )
             }
-            var result by remember { mutableStateOf(true) }
-            val imageResource = when (result) {
-                true -> R.drawable.notrecording
-                else -> R.drawable.recording
-            }
-            IconButton(onClick = {result = !result},
+            IconButton(onClick = {if (isRecording == false){
+                                        mediaPlayer.stop()
+                                        mediaPlayer.release()
+                                        recorder = MediaRecorder().apply {
+                                            setAudioSource(MediaRecorder.AudioSource.MIC)
+                                            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                                            setOutputFile(shush1)
+                                            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+                                        }
+                                    }
+                                    else if (isRecording == true && recorder != null) {
+                                        recorder.stop()
+                                        recorder.release()
+                                    }
+                                    isRecording = !isRecording
+                                 },
                 modifier = Modifier.size(250.dp)){
                 Image(painter = painterResource(imageResource),
                     contentDescription = "recording button")
