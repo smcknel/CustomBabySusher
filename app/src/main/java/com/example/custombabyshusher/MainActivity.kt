@@ -28,8 +28,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // Calling the composable function
-            // to display element and its contents
            RunApp()
         }
     }
@@ -41,8 +39,6 @@ fun RunApp(){
     generateButtons(modifier = Modifier)
 }
 
-// Creating a composable
-// function to display Top Bar
 @Composable
 fun generateButtons(modifier: Modifier = Modifier) {
     val mContext = LocalContext.current
@@ -88,11 +84,16 @@ fun generateButtons(modifier: Modifier = Modifier) {
                                             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
                                             setOutputFile(shush1)
                                             setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+                                            prepare()
+                                            start()
                                         }
                                     }
                                     else if (isRecording == true && recorder != null) {
-                                        recorder.stop()
-                                        recorder.release()
+                                        recorder = MediaRecorder().apply{
+                                            stop()
+                                            reset()
+                                            release()
+                                        }
                                     }
                                     isRecording = !isRecording
                                  },
